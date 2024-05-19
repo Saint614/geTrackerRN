@@ -1,20 +1,29 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { ScrollView, Text, View, StyleSheet } from "react-native";
+import { Card } from "@rneui/themed";
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+  const url = "prices.runescape.wiki/api/v1/osrs/latest";
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  const Fetch = () => {
+    const [items, setItems] = useState([]);
+
+    useEffect(() => {
+      fetch(url)
+        .then((res) => {
+          return res.json();
+        })
+        .then((data) => {
+          console.log(data);
+          setItems(data);
+        });
+    }, []);
+    return (
+      <ScrollView>
+        {items.map((item) => (
+          <Text>{item}</Text>
+        ))}
+      </ScrollView>
+    );
+  };
+}
