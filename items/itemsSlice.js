@@ -1,34 +1,25 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { baseUrl } from "../shared/baseUrl";
-import { Text, View } from "react-native";
 
-export const fetchItems = createAsyncThunk("items/fetchItem", async () => {
-  try {
-    const response = await fetch(baseUrl);
-    const geInfo = await response.json();
-    const itemsArr = geInfo.filter(function (el) {
-      return el.value >= 5000000;
-    });
-  } catch (error) {
-    console.error("There was an error!", error);
+export const fetchItems = createAsyncThunk("items/fetchItems", async () => {
+  const response = await fetch(baseUrl);
+  if (!response.ok) {
+    return Promise.reject("Unable to fetch, status: " + response.status);
   }
+  const data = await response.json();
+  const filteredData = data.filter((el) => el.value >= 5000000);
+  return filteredData;
 });
 
-fetchItems();
-// const [data, setData] = useState([]);
-// useEffect(() => {
-//     fetch(baseUrl)
-//     .then(response => response.json())
-//     .then(json => setData(json))
-//     .catch(error => alert(error))
-//     .finally(setLoading(false));
-// }, []);
-
-// console.log(data);
+const initialState = {
+  itemsArray: [],
+  isLoading: true,
+  errMsg: "",
+};
 
 const itemsSlice = createSlice({
   name: "items",
-  initialState: { isLoading: true, errMess: null, itemsArray: [] },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -37,12 +28,17 @@ const itemsSlice = createSlice({
       })
       .addCase(fetchItems.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.errMess = null;
+        state.errMsg = "";
         state.itemsArray = action.payload;
       })
       .addCase(fetchItems.rejected, (state, action) => {
         state.isLoading = false;
-        state.errMess = action.error ? action.error.message : "Fetch failed";
+        state.errMsg = action.error.message || "Fetch failed";
       });
   },
 });
+
+export const itemsReducer = itemsSlice.reducer;
+export const selectAllItems = (state) => {
+  return state.items.itemsArray;
+};
